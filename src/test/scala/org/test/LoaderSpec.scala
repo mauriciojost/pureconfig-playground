@@ -14,22 +14,22 @@ class LoaderSpec extends AnyFlatSpec with Matchers with EitherValues {
 
   "The config loader" should "parse a basic configuration" in {
     val fromString = Loader.fromString[Classes.IntAndString]("""
-        |an-integer: 10
+        |an-integer: 10 // kebab-case
         |a-string: toto
         |""".stripMargin)
     fromString shouldBe Right(Classes.IntAndString(10, "toto"))
   }
 
-  it should "parse a basic config camel-case to camel-case" in {
-    implicit def productHint[T] = ProductHint[T](ConfigFieldMapping(CamelCase, CamelCase))
+  it should "parse a basic config pascal-case to camel-case" in {
+    implicit def productHint[T] = ProductHint[T](ConfigFieldMapping(CamelCase, PascalCase))
     val fromString = Loader.fromString[Classes.IntAndString]("""
-        |anInteger: 10
-        |aString: toto
+        |AnInteger: 10
+        |AString: toto
         |""".stripMargin)
     fromString shouldBe Right(Classes.IntAndString(10, "toto"))
   }
 
-  it should "parse a config with a sealed trait (using type keyword)" in {
+  it should "parse a config with a sealed trait (using 'type' keyword)" in {
     val fromString = Loader.fromString[Classes.Colleague]("""
                                                             |name: mauricio
                                                             |person-type: {type: dog-type}
@@ -50,7 +50,7 @@ class LoaderSpec extends AnyFlatSpec with Matchers with EitherValues {
 
   it should "parse a config with a sealed trait (custom reader int -> sealed trait)" in {
     implicit val personTypeReader: ConfigReader[PersonType] =
-      ConfigReader[Int].map(s => if (s == 1) DogType else CatType)
+      ConfigReader[Int].map(i => if (i == 1) DogType else CatType)
 
     val fromString = Loader.fromString[Classes.Colleague]("""
                                                             |name: mauricio
@@ -65,7 +65,7 @@ class LoaderSpec extends AnyFlatSpec with Matchers with EitherValues {
         .fromString(s)
         .fold(
           errMsg => Left(CannotConvert(s, PersonType.getClass.getTypeName, errMsg)),
-          s => Right(s) // you could add tighter here!
+          s => Right(s) // you could add tighter validation here!
         )
     }
     val fromString = Loader.fromString[Classes.Colleague]("""

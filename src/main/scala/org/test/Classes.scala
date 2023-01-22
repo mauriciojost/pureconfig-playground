@@ -16,7 +16,7 @@ object Classes {
       }
     }
   }
-  sealed trait PersonType
+  sealed trait PersonType // ADT because: type erasure and exhaustive pattern matching
   case object DogType extends PersonType
   case object CatType extends PersonType
   case class Colleague(
